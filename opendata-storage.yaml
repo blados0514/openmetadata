@@ -1,32 +1,51 @@
-kind: StorageClass
-apiVersion: storage.k8s.io/v1
-metadata:
-  name: local-opendata
-  annotations:
-    storageclass.kubernetes.io/is-default-class: "true"
-parameters:
-  type: gp2
-provisioner: kubernetes.io/no-provisioner
-volumeBindingMode: WaitForFirstConsumer
+# kind: StorageClass
+# apiVersion: storage.k8s.io/v1
+# metadata:
+#   name: local-opendata
+#   annotations:
+#     storageclass.kubernetes.io/is-default-class: "true"
+# parameters:
+#   type: gp2
+# provisioner: kubernetes.io/no-provisioner
+# volumeBindingMode: WaitForFirstConsumer
 
----
+# ---
 
-kind: PersistentVolume
+# kind: PersistentVolume
+# apiVersion: v1
+# metadata:
+#   name: pv-opendata-dags
+# spec:
+#   volumeMode: Filesystem
+#   #storageClassName: local-opendata
+#   accessModes:
+#   - ReadWriteMany
+#   capacity:
+#     storage: 10Gi
+#   claimRef:
+#      namespace: opendata
+#      name: pvc-opendata-dags
+#   hostPath:
+#     path: "/airflow-dags"
+
+
+# ---
+
+kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
-  name: opendata-pv-dags
+  labels:
+    app: airflow
+    release: openmetadata-dependencies-dags
+  name: pvc-opendata-dags
+  namespace: opendata
 spec:
-  volumeMode: Filesystem
-  storageClassName: local-opendata
+  #storageClassName: local-opendata
   accessModes:
-  - ReadWriteMany
-  capacity:
-    storage: 10Gi
-  claimRef:
-     namespace: opendata
-     name: pvc-opendata-dags
-  hostPath:
-    path: "/airflow-dags"
+    - ReadWriteOnce #ReadWriteMany
+  resources:
+    requests:
+      storage: 1Gi
 
 
 ---
@@ -36,13 +55,29 @@ apiVersion: v1
 metadata:
   labels:
     app: airflow
-    release: openmetadata-dependencies
-  name: pvc-opendata-dags
+    release: openmetadata-dependencies-logs
+  name: pvc-opendata-logs
   namespace: opendata
 spec:
-  storageClassName: local-opendata
   accessModes:
-    - ReadWriteMany
+    - ReadWriteOnce #ReadWriteMany
   resources:
     requests:
-      storage: 3Gi
+      storage: 1Gi
+
+
+# apiVersion: v1
+# kind: PersistentVolumeClaim
+# metadata:
+#   namespace: opendata
+#   name: openmetadata-dependencies-dags
+#   labels:
+#     # storage.k8s.io/name: nfs
+#     app: airflow
+# spec:
+#   accessModes:
+#     - ReadWriteMany
+#   storageClassName: nfs-client
+#   resources:
+#     requests:
+#       storage: 1Gi
